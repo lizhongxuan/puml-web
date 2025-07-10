@@ -1,0 +1,248 @@
+// PlantUML在线编辑器 JavaScript
+class PlantUMLEditor {
+    constructor() {
+        this.initializeElements();
+        this.bindEvents();
+        this.loadExamples();
+        this.updateStatus('准备就绪', 'default');
+    }
+
+    // 初始化DOM元素引用
+    initializeElements() {
+        this.codeEditor = document.getElementById('codeEditor');
+        this.renderBtn = document.getElementById('renderBtn');
+        this.clearBtn = document.getElementById('clearBtn');
+        this.exampleSelect = document.getElementById('exampleSelect');
+        this.outputType = document.getElementById('outputType');
+        this.previewContent = document.getElementById('previewContent');
+        this.status = document.getElementById('status');
+    }
+
+    // 绑定事件监听器
+    bindEvents() {
+        // 渲染按钮点击事件
+        this.renderBtn.addEventListener('click', () => this.renderDiagram());
+        
+        // 清空按钮点击事件
+        this.clearBtn.addEventListener('click', () => this.clearEditor());
+        
+        // 示例选择事件
+        this.exampleSelect.addEventListener('change', (e) => this.loadExample(e.target.value));
+        
+        // 键盘快捷键：Ctrl+Enter 渲染
+        this.codeEditor.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                this.renderDiagram();
+            }
+        });
+
+        // 代码变化时清除之前的状态
+        this.codeEditor.addEventListener('input', () => {
+            if (this.status.textContent.includes('成功') || this.status.textContent.includes('失败')) {
+                this.updateStatus('已修改，点击渲染查看结果', 'default');
+            }
+        });
+    }
+
+    // 加载示例代码列表
+    async loadExamples() {
+        try {
+            const response = await fetch('/api/examples');
+            if (!response.ok) {
+                throw new Error(`HTTP错误: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            this.populateExampleSelect(data.examples);
+        } catch (error) {
+            console.error('加载示例失败:', error);
+            this.updateStatus('加载示例失败', 'error');
+        }
+    }
+
+    // 填充示例选择框
+    populateExampleSelect(examples) {
+        // 清空现有选项（保留默认选项）
+        while (this.exampleSelect.children.length > 1) {
+            this.exampleSelect.removeChild(this.exampleSelect.lastChild);
+        }
+
+        // 添加示例选项
+        examples.forEach((example, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = example.name;
+            option.title = example.description;
+            this.exampleSelect.appendChild(option);
+        });
+
+        // 存储示例数据供后续使用
+        this.examples = examples;
+    }
+
+    // 加载选中的示例
+    loadExample(index) {
+        if (index === '' || !this.examples) return;
+        
+        const example = this.examples[parseInt(index)];
+        if (example) {
+            this.codeEditor.value = example.code;
+            this.updateStatus(`已加载示例: ${example.name}`, 'success');
+            
+            // 焦点回到编辑器
+            this.codeEditor.focus();
+        }
+    }
+
+    // 清空编辑器
+    clearEditor() {
+        if (confirm('确定要清空编辑器内容吗？')) {
+            this.codeEditor.value = '';
+            this.previewContent.innerHTML = '<div class="placeholder">点击"渲染图表"按钮查看结果</div>';
+            this.updateStatus('编辑器已清空', 'default');
+            this.exampleSelect.value = '';
+            this.codeEditor.focus();
+        }
+    }
+
+    // 渲染PlantUML图表
+    async renderDiagram() {
+        const code = this.codeEditor.value.trim();
+        
+        if (!code) {
+            this.updateStatus('请输入PlantUML代码', 'error');
+            this.codeEditor.focus();
+            return;
+        }
+
+        // 更新状态为加载中
+        this.updateStatus('正在渲染...', 'loading');
+        this.renderBtn.disabled = true;
+        
+        // 添加加载动画
+        const originalText = this.renderBtn.textContent;
+        this.renderBtn.innerHTML = '<span class="loading-spinner"></span> 渲染中...';
+
+        try {
+            const response = await fetch('/api/render', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code: code,
+                    type: this.outputType.value
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.displayResult(result.imageData, this.outputType.value);
+                this.updateStatus('渲染成功！', 'success');
+            } else {
+                this.displayError(result.message);
+                this.updateStatus(`渲染失败: ${result.message}`, 'error');
+            }
+
+        } catch (error) {
+            console.error('渲染请求失败:', error);
+            this.displayError(`网络错误: ${error.message}`);
+            this.updateStatus('网络请求失败', 'error');
+        } finally {
+            // 恢复按钮状态
+            this.renderBtn.disabled = false;
+            this.renderBtn.textContent = originalText;
+        }
+    }
+
+    // 显示渲染结果
+    displayResult(imageData, outputType) {
+        if (outputType === 'txt') {
+            // 文本输出
+            this.previewContent.innerHTML = `<pre>${this.escapeHtml(imageData)}</pre>`;
+        } else {
+            // 图片输出
+            const img = document.createElement('img');
+            img.src = imageData;
+            img.alt = 'PlantUML渲染结果';
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            
+            // 添加错误处理
+            img.onerror = () => {
+                this.displayError('图片加载失败，请检查PlantUML代码是否正确');
+                this.updateStatus('图片显示失败', 'error');
+            };
+
+            this.previewContent.innerHTML = '';
+            this.previewContent.appendChild(img);
+        }
+    }
+
+    // 显示错误信息
+    displayError(message) {
+        this.previewContent.innerHTML = `
+            <div class="error-message">
+                <strong>渲染失败</strong><br>
+                ${this.escapeHtml(message)}
+                <br><br>
+                <small>提示：请检查PlantUML代码语法是否正确，确保以@startuml开始，@enduml结束</small>
+            </div>
+        `;
+    }
+
+    // 更新状态显示
+    updateStatus(message, type = 'default') {
+        this.status.textContent = message;
+        this.status.className = `status ${type}`;
+    }
+
+    // HTML转义函数
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // 获取当前代码
+    getCurrentCode() {
+        return this.codeEditor.value;
+    }
+
+    // 设置代码
+    setCode(code) {
+        this.codeEditor.value = code;
+    }
+}
+
+// 页面加载完成后初始化编辑器
+document.addEventListener('DOMContentLoaded', () => {
+    // 初始化PlantUML编辑器
+    window.plantUMLEditor = new PlantUMLEditor();
+    
+    console.log('PlantUML在线编辑器已初始化');
+    console.log('快捷键: Ctrl+Enter 渲染图表');
+});
+
+// 全局错误处理
+window.addEventListener('error', (event) => {
+    console.error('全局错误:', event.error);
+    if (window.plantUMLEditor) {
+        window.plantUMLEditor.updateStatus('发生未知错误', 'error');
+    }
+});
+
+// 网络状态监测
+window.addEventListener('online', () => {
+    if (window.plantUMLEditor) {
+        window.plantUMLEditor.updateStatus('网络连接已恢复', 'success');
+    }
+});
+
+window.addEventListener('offline', () => {
+    if (window.plantUMLEditor) {
+        window.plantUMLEditor.updateStatus('网络连接断开', 'error');
+    }
+}); 

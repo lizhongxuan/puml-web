@@ -1,0 +1,10 @@
+@startuml
+participant Alice
+participant Bob
+participant Carol
+
+Alice -> Bob: 你好，Bob
+Bob -> Carol: 转发消息
+Carol --> Bob: 收到
+Bob --> Alice: 确认
+@enduml

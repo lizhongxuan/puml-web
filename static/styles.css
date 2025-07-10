@@ -1,0 +1,335 @@
+/* 重置和基本样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+/* 头部样式 */
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    color: white;
+}
+
+header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+header p {
+    font-size: 1.2em;
+    opacity: 0.9;
+}
+
+/* 主内容区域 */
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    height: calc(100vh - 200px);
+}
+
+/* 面板基本样式 */
+.editor-panel, .preview-panel {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 面板头部 */
+.editor-header, .preview-header {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.editor-header h3, .preview-header h3 {
+    margin: 0;
+    font-size: 1.3em;
+}
+
+/* 工具栏样式 */
+.toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.toolbar select, .toolbar button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.toolbar select {
+    background: rgba(255,255,255,0.9);
+    color: #333;
+}
+
+.toolbar button {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    font-weight: 500;
+}
+
+.toolbar button:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-1px);
+}
+
+/* 状态指示器 */
+.status {
+    padding: 5px 15px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 15px;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.status.loading {
+    background: #ffd700;
+    color: #333;
+}
+
+.status.success {
+    background: #4caf50;
+    color: white;
+}
+
+.status.error {
+    background: #f44336;
+    color: white;
+}
+
+/* 代码编辑器 */
+#codeEditor {
+    flex: 1;
+    border: none;
+    padding: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    background: #fafafa;
+    color: #333;
+}
+
+#codeEditor:focus {
+    background: white;
+}
+
+/* 预览区域 */
+.preview-content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    overflow: auto;
+}
+
+.preview-content img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.preview-content pre {
+    background: #2d3748;
+    color: #e2e8f0;
+    padding: 20px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow: auto;
+    max-width: 100%;
+    max-height: 100%;
+    white-space: pre-wrap;
+}
+
+.placeholder {
+    text-align: center;
+    color: #666;
+    font-size: 1.1em;
+    padding: 40px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    
+    .editor-panel, .preview-panel {
+        min-height: 400px;
+    }
+    
+    .toolbar {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .toolbar select, .toolbar button {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    header h1 {
+        font-size: 2em;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* 加载动画 */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 错误消息样式 */
+.error-message {
+    background: #ffe6e6;
+    color: #d8000c;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #d8000c;
+    margin: 10px;
+    font-family: monospace;
+    white-space: pre-wrap;
+}
+
+/* 成功消息样式 */
+.success-message {
+    background: #e6ffe6;
+    color: #4caf50;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #4caf50;
+    margin: 10px;
+} 
+/* SVG点击功能样式 */
+.preview-content svg text:hover,
+.preview-content svg rect:hover,
+.preview-content svg ellipse:hover,
+.preview-content svg circle:hover,
+.preview-content svg polygon:hover,
+.preview-content svg path:hover {
+    opacity: 0.7 !important;
+    transition: opacity 0.2s ease;
+}
+
+.preview-content svg g:hover {
+    opacity: 0.8 !important;
+    transition: opacity 0.2s ease;
+}
+
+/* 点击提示样式 */
+.click-hint {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 123, 255, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.preview-panel:hover .click-hint {
+    opacity: 1;
+}
+
+/* 改进的状态提示 */
+.status.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.status.loading {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* 格式标签样式 */
+.format-label {
+    background: #e9ecef;
+    color: #495057;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid #ced4da;
+}

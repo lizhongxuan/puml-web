@@ -1,0 +1,85 @@
+@startuml
+!define RECTANGLE class
+
+title PlantUML在线编辑器 - 系统架构图
+
+actor 用户 as User
+node "Web浏览器" as Browser {
+    component "HTML/CSS界面" as UI
+    component "JavaScript客户端" as JS
+    component "代码编辑器" as Editor
+}
+
+node "Go Web服务器\n(:8090)" as WebServer {
+    component "路由处理器" as Router
+    component "CORS中间件" as CORS
+    component "静态文件服务" as Static
+    component "API处理器" as API
+}
+
+node "Docker容器\n(:8888)" as Docker {
+    component "PlantUML服务器" as PlantUMLServer
+    component "图表渲染引擎" as RenderEngine
+}
+
+database "示例代码库" as Examples {
+    component "序列图示例" as SeqExample
+    component "类图示例" as ClassExample  
+    component "用例图示例" as UseCaseExample
+    component "活动图示例" as ActivityExample
+}
+
+' 用户交互流程
+User --> Browser : 访问编辑器
+Browser --> UI : 显示界面
+UI --> Editor : 编辑PlantUML代码
+Editor --> JS : 触发渲染事件
+
+' API调用流程
+JS --> Router : HTTP请求\n/api/render
+Router --> CORS : CORS处理
+CORS --> API : 转发请求
+API --> PlantUMLServer : POST请求\n(PlantUML代码)
+PlantUMLServer --> RenderEngine : 解析并渲染
+RenderEngine --> PlantUMLServer : 返回图片/文本
+PlantUMLServer --> API : 响应结果
+API --> JS : JSON响应
+JS --> UI : 更新预览
+
+' 静态资源服务
+Router --> Static : 静态文件请求\n/static/*
+Static --> Browser : CSS/JS文件
+
+' 示例代码服务
+JS --> Router : GET /api/examples
+Router --> API : 获取示例
+API --> Examples : 读取示例代码
+Examples --> API : 返回示例列表
+API --> JS : JSON响应
+
+' 技术标注
+note right of WebServer
+  **技术栈:**
+  - Go 1.21
+  - net/http标准库
+  - RESTful API设计
+  - CORS支持
+end note
+
+note right of Browser
+  **前端技术:**
+  - 原生JavaScript
+  - CSS Grid布局
+  - 响应式设计
+  - 异步HTTP请求
+end note
+
+note right of Docker
+  **PlantUML服务:**
+  - Java运行时
+  - PlantUML引擎
+  - HTTP API接口
+  - 多格式输出
+end note
+
+@enduml 
