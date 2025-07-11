@@ -290,3 +290,105 @@ window.addEventListener('offline', () => {
         window.plantUMLEditor.updateStatus('网络连接断开', 'error');
     }
 });
+
+// --- 缩放和平移功能 ---
+class PanAndZoom {
+    constructor(editor, targetElement) {
+        this.editor = editor;
+        this.target = targetElement;
+        this.zoomLevel = 1.0;
+        this.minZoom = 0.2;
+        this.maxZoom = 5.0;
+        this.zoomStep = 0.1;
+
+        this.isPanning = false;
+        this.startPos = { x: 0, y: 0 };
+        this.offset = { x: 0, y: 0 };
+
+        this.zoomInBtn = document.getElementById('zoomInBtn');
+        this.zoomOutBtn = document.getElementById('zoomOutBtn');
+        this.zoomResetBtn = document.getElementById('zoomResetBtn');
+
+        this.bindEvents();
+    }
+
+    bindEvents() {
+        this.zoomInBtn.addEventListener('click', () => this.zoomIn());
+        this.zoomOutBtn.addEventListener('click', () => this.zoomOut());
+        this.zoomResetBtn.addEventListener('click', () => this.reset());
+
+        // 鼠标滚轮缩放
+        this.target.addEventListener('wheel', (e) => this.handleWheel(e));
+
+        // 鼠标拖动平移
+        this.target.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+        window.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+        window.addEventListener('mouseup', () => this.handleMouseUp());
+    }
+
+    applyTransform() {
+        const imageContainer = this.target.firstElementChild;
+        if (imageContainer) {
+            imageContainer.style.transform = `translate(${this.offset.x}px, ${this.offset.y}px) scale(${this.zoomLevel})`;
+        }
+    }
+
+    zoomIn() {
+        this.zoomLevel = Math.min(this.maxZoom, this.zoomLevel + this.zoomStep);
+        this.applyTransform();
+    }
+
+    zoomOut() {
+        this.zoomLevel = Math.max(this.minZoom, this.zoomLevel - this.zoomStep);
+        this.applyTransform();
+    }
+
+    reset() {
+        this.zoomLevel = 1.0;
+        this.offset = { x: 0, y: 0 };
+        this.applyTransform();
+    }
+
+    handleWheel(e) {
+        // 只在使用Ctrl键时缩放，避免与页面滚动冲突
+        if (e.ctrlKey) {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                this.zoomIn();
+            } else {
+                this.zoomOut();
+            }
+            this.editor.updateStatus(`缩放: ${Math.round(this.zoomLevel * 100)}%`, 'default');
+        }
+    }
+
+    handleMouseDown(e) {
+        // 只在主键（左键）按下时开始平移
+        if (e.button !== 0) return;
+        this.isPanning = true;
+        this.startPos = { x: e.clientX - this.offset.x, y: e.clientY - this.offset.y };
+        this.target.style.cursor = 'grabbing';
+    }
+
+    handleMouseMove(e) {
+        if (this.isPanning) {
+            e.preventDefault();
+            this.offset.x = e.clientX - this.startPos.x;
+            this.offset.y = e.clientY - this.startPos.y;
+            this.applyTransform();
+        }
+    }
+
+    handleMouseUp() {
+        this.isPanning = false;
+        this.target.style.cursor = 'grab';
+    }
+}
+
+// 在 PlantUMLEditor 的构造函数中初始化
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.plantUMLEditor && window.plantUMLEditor.previewContent) {
+        new PanAndZoom(window.plantUMLEditor, window.plantUMLEditor.previewContent);
+        console.log('平移和缩放功能已初始化。');
+    }
+});

@@ -92,67 +92,15 @@ func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 // 主页处理器
 func homeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
 	if r.Method != http.MethodGet {
 		http.Error(w, "方法不允许", http.StatusMethodNotAllowed)
 		return
 	}
-	
-	tmpl := `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PlantUML 在线编辑器</title>
-    <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>PlantUML 在线编辑器</h1>
-            <p>实时编辑和预览PlantUML图表</p>
-        </header>
-        
-        <div class="main-content">
-            <div class="editor-panel">
-                <div class="editor-header">
-                    <h3>PlantUML 代码编辑器</h3>
-                    <div class="toolbar">
-                        <select id="exampleSelect">
-                            <option value="">选择示例...</option>
-                        </select>
-                        <select id="outputType" style="display: none;">
-                            <option value="svg" selected>SVG</option>
-                        </select>
-                        <span class="format-label">输出格式: SVG</span>
-                        <button id="renderBtn">渲染图表</button>
-                        <button id="clearBtn">清空</button>
-                    </div>
-                </div>
-                <textarea id="codeEditor" placeholder="请输入PlantUML代码...">@startuml
-Alice -> Bob: Hello
-Bob -> Alice: Hi!
-@enduml</textarea>
-            </div>
-            
-            <div class="preview-panel">
-                <div class="preview-header">
-                    <h3>预览结果</h3>
-                    <div class="status" id="status">准备就绪</div>
-                </div>
-                <div class="preview-content" id="previewContent">
-                    <div class="placeholder">点击"渲染图表"按钮查看结果</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script src="/static/svg-click-handler.js"></script>
-    <script src="/static/app.js"></script>
-</body>
-</html>`
-	
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprint(w, tmpl)
+	http.ServeFile(w, r, "static/index.html")
 }
 
 // PlantUML渲染处理器

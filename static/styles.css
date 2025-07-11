@@ -333,3 +333,56 @@ header p {
     font-weight: 500;
     border: 1px solid #ced4da;
 }
+
+/* 缩放控制样式 */
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto; /* 将缩放按钮推到最右边 */
+    padding-right: 20px;
+}
+
+.zoom-controls button {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    padding: 4px 8px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    min-width: 40px;
+}
+
+.zoom-controls button:hover {
+    background-color: #e9ecef;
+}
+
+.zoom-controls button:active {
+    background-color: #dee2e6;
+}
+
+/* 调整预览头部布局 */
+.preview-header {
+    display: flex;
+    justify-content: flex-start; /* 标题居左 */
+    align-items: center;
+}
+
+.preview-content {
+    overflow: hidden; /* 隐藏超出部分 */
+    cursor: grab;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.preview-content:active {
+    cursor: grabbing;
+}
+
+.preview-content > div {
+    transition: transform 0.2s ease-out; /* 为缩放添加平滑过渡 */
+}
